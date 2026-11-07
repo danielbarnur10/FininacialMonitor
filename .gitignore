@@ -1,0 +1,6 @@
+**/bin/
+**/obj/
+**/TestResults/
+node_modules/
+dist/
+.DS_Store
