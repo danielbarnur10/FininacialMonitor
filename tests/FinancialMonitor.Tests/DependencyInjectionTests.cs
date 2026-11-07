@@ -3,7 +3,8 @@ using FinancialMonitor.Application;
 using FinancialMonitor.Domain;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.StackExchangeRedis;
 namespace FinancialMonitor.Tests;
 
 public class DependencyInjectionTests
@@ -50,4 +51,32 @@ public class DependencyInjectionTests
         services.AddFinancialMonitor(new ConfigurationBuilder().Build());
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
     }
+    [Fact]
+public void RedisConfigured_RegistersRedisSignalRBackplane()
+{
+    // Arrange
+    var settings = new Dictionary<string, string?>
+    {
+        ["ConnectionStrings:Redis"] = "127.0.0.1:16379"
+    };
+
+    var configuration = new ConfigurationBuilder()
+        .AddInMemoryCollection(settings)
+        .Build();
+
+    var services = new ServiceCollection();
+
+    // Act
+    services.AddFinancialMonitor(configuration);
+
+    // Assert
+    var registration = services.Last(
+        service => service.ServiceType == typeof(HubLifetimeManager<>)
+    );
+
+    Assert.Equal(
+        typeof(RedisHubLifetimeManager<>),
+        registration.ImplementationType
+    );
+}
 }

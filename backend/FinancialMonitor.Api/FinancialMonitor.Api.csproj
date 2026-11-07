@@ -11,4 +11,8 @@
     <ProjectReference Include="..\FinancialMonitor.Infrastructure\FinancialMonitor.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="9.0.22" />
+  </ItemGroup>
+
 </Project>
