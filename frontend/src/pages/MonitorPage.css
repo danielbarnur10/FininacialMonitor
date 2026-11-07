@@ -1,0 +1,21 @@
+.status {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.35rem;
+  font-weight: 600;
+}
+
+.status--pending {
+  color: #713f12;
+  background-color: #fef3c7;
+}
+
+.status--completed {
+  color: #14532d;
+  background-color: #dcfce7;
+}
+
+.status--failed {
+  color: #7f1d1d;
+  background-color: #fee2e2;
+}

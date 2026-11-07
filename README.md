@@ -1,6 +1,9 @@
-# Financial Monitor — backend MVP
+# Financial Monitor
 
-The backend accepts financial transaction updates over HTTP, keeps a bounded in-memory history, and broadcasts each update to connected SignalR clients. The React frontend will be added separately.
+A real-time financial monitoring MVP built with .NET 9, React, and TypeScript.
+
+The simulator sends transaction updates to the backend. The monitor loads
+recent transactions and receives new updates through SignalR.
 
 ## Architecture
 
@@ -31,7 +34,41 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run \
   --no-launch-profile -- --urls http://127.0.0.1:5080
 ```
 
-Development CORS allows `http://localhost:5173` and `http://127.0.0.1:5173` for the future frontend. For other environments, configure `Cors:AllowedOrigins` explicitly. `GET /health` checks that the application is running.
+Development CORS allows `http://localhost:5173` and `http://127.0.0.1:5173` for the frontend. For other environments, configure `Cors:AllowedOrigins` explicitly. `GET /health` checks that the application is running.
+
+
+## Run the frontend
+
+Prerequisite: Node.js 22.12 or later.
+
+Keep the backend running, then open a second terminal from the project root:
+
+```bash
+cd frontend
+npm ci
+npm run dev -- --port 5173 --strictPort
+```
+
+Open http://localhost:5173.
+
+- `/add` contains the transaction simulator.
+- `/monitor` displays recent and live transactions and supports status filtering.
+
+The frontend is configured to call the backend at `http://127.0.0.1:5080`.
+
+### Check the complete flow
+
+1. Open `/monitor` and wait for the connection status to become `connected`.
+2. Open `/add` in another tab.
+3. Submit a transaction.
+4. Confirm it appears on `/monitor`.
+5. Try the status filter.
+
+To check the frontend build:
+
+```bash
+npm run build
+```
 
 ## API
 
@@ -76,4 +113,3 @@ It sends test transactions to the running backend and checks validation, concurr
 ## Current limits and scale-out
 
 This is a single-process MVP. Restarting the process clears history; data is not durable. Multiple replicas would have separate stores and SignalR connection sets. To scale out, use shared durable storage and a SignalR backplane or managed SignalR service, then define ordering, idempotency, and reconnect/replay behavior. A transactional outbox is one possible way to coordinate durable writes with publishing; those components are not implemented here. Concurrent broadcasts are not guaranteed to arrive in the same order as the storage snapshot.
-# FininacialMonitor
