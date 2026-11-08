@@ -5,7 +5,7 @@ metadata:
   name: financial-monitor
 
 spec:
-  replicas: 1
+  replicas: 5
 
   strategy:
     type: Recreate
@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: financial-monitor-api:latest
+          image: financial-monitor-api:distributed-v1
           imagePullPolicy: IfNotPresent
 
           ports:
@@ -30,6 +30,8 @@ spec:
               containerPort: 8080
 
           env:
+            - name: ConnectionStrings__Redis
+              value: "financial-monitor-redis:6379"
             - name: Cors__AllowedOrigins__0
               value: "http://localhost:5173"
             - name: Cors__AllowedOrigins__1

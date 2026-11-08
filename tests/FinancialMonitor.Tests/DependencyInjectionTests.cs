@@ -1,14 +1,50 @@
 using FinancialMonitor.Api.IoC;
 using FinancialMonitor.Application;
 using FinancialMonitor.Domain;
+using FinancialMonitor.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis;
+using StackExchange.Redis;
 namespace FinancialMonitor.Tests;
 
 public class DependencyInjectionTests
 {
+    [Fact]
+    public void RedisConfigured_RegistersSingletonSharedStoreAndConnection()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:Redis"] = "127.0.0.1:16379"
+            })
+            .Build();
+        var services = new ServiceCollection();
+
+        services.AddFinancialMonitor(configuration);
+
+        var store = Assert.Single(services, item => item.ServiceType == typeof(ITransactionStore));
+        var connection = Assert.Single(services, item => item.ServiceType == typeof(IConnectionMultiplexer));
+        Assert.Equal(ServiceLifetime.Singleton, store.Lifetime);
+        Assert.NotNull(store.ImplementationFactory);
+        Assert.Equal(ServiceLifetime.Singleton, connection.Lifetime);
+        Assert.NotNull(connection.ImplementationFactory);
+    }
+
+    [Fact]
+    public void RedisNotConfigured_UsesLocalInMemoryStore()
+    {
+        var services = new ServiceCollection();
+
+        services.AddFinancialMonitor(new ConfigurationBuilder().Build());
+
+        var store = Assert.Single(services, item => item.ServiceType == typeof(ITransactionStore));
+        Assert.Equal(typeof(InMemoryTransactionStore), store.ImplementationType);
+        Assert.Equal(ServiceLifetime.Singleton, store.Lifetime);
+        Assert.DoesNotContain(services, item => item.ServiceType == typeof(IConnectionMultiplexer));
+    }
+
     [Fact]
     public async Task Store_IsSharedBetweenRequestScopes()
     {

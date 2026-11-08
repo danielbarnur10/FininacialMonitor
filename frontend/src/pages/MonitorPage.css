@@ -3,6 +3,7 @@
   padding: 0.2rem 0.5rem;
   border-radius: 0.35rem;
   font-weight: 600;
+  transition: color 250ms ease, background-color 250ms ease;
 }
 
 .status--pending {
@@ -18,4 +19,30 @@
 .status--failed {
   color: #7f1d1d;
   background-color: #fee2e2;
+}
+
+.transaction-arrival {
+  animation: transaction-arrive 350ms ease-out both;
+}
+
+@keyframes transaction-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transaction-arrival {
+    animation: none;
+  }
+
+  .status {
+    transition: none;
+  }
 }

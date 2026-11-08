@@ -1,5 +1,6 @@
 using FinancialMonitor.Application;
 using FinancialMonitor.Infrastructure;
+using StackExchange.Redis;
 
 namespace FinancialMonitor.Api.IoC;
 
@@ -19,9 +20,19 @@ public static class DependencyInjection
         if (!string.IsNullOrWhiteSpace(redisConnection))
         {
             signalR.AddStackExchangeRedis(redisConnection);
+            services.AddSingleton<IConnectionMultiplexer>(
+                _ => ConnectionMultiplexer.Connect(redisConnection));
+            services.AddSingleton<ITransactionStore>(provider =>
+                new RedisTransactionStore(
+                    provider.GetRequiredService<IConnectionMultiplexer>(),
+                    "financial-monitor:transactions"));
         }
-        // All requests and hub connections must see the same in-memory history.
-        services.AddSingleton<ITransactionStore, InMemoryTransactionStore>();
+        else
+        {
+            // Share one local history when Redis is not configured.
+            services.AddSingleton<ITransactionStore, InMemoryTransactionStore>();
+        }
+
         services.AddSingleton<ITransactionBroadcaster, SignalRTransactionBroadcaster>();
 
         // A service instance is created for each HTTP request.
